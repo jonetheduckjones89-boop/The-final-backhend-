@@ -30,3 +30,10 @@ app.use(errorHandler);
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+app.get("/", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    service: "OREN Backend",
+    message: "API is live"
+  });
+});
