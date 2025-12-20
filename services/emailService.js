@@ -1,31 +1,25 @@
-const { Resend } = require('resend');
-
+const Resend = require("resend");
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM_EMAIL = process.env.FROM_EMAIL || 'notifications@resend.dev';
 
-/**
- * Sends the generated workflow email to the client.
- */
-const sendWorkflowEmail = async (toEmail, messageBody) => {
-    try {
-        const { data, error } = await resend.emails.send({
-            from: `OREN AI <${FROM_EMAIL}>`,
-            to: [toEmail],
-            subject: 'Your OREN AI Workflow Is Being Prepared',
-            text: messageBody, // Sending as plain text as requested
-        });
+async function sendCustomEmail({ to, clinicName }) {
+  try {
+    console.log("Sending email to:", to);
 
-        if (error) {
-            console.error('Resend SDK Error:', error);
-            throw new Error(`Email delivery failed: ${error.message}`);
-        }
+    const response = await resend.emails.send({
+      from: process.env.FROM_EMAIL,
+      to,
+      subject: `Thank you ${clinicName}`,
+      html: `<p>Hi ${clinicName},</p>
+             <p>Thank you for your request. Our team will analyze your data and create a custom workflow for your clinic. Stay tuned!</p>
+             <p>— The OREN Team</p>`,
+    });
 
-        console.log(`Email successfully dispatched to ${toEmail}: ${data.id}`);
-        return data;
-    } catch (error) {
-        console.error('Email Service Error:', error);
-        throw error;
-    }
-};
+    console.log("Email sent successfully:", response);
+  } catch (err) {
+    console.error("Failed to send email:", err);
+    throw err;
+  }
+}
 
-module.exports = { sendWorkflowEmail };
+module.exports = { sendCustomEmail };
+
