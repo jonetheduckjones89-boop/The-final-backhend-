@@ -16,17 +16,31 @@ app.use(cors());
 app.use(express.json());
 app.use(logger);
 
+// ✅ ROOT ROUTE (ADD THIS)
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    service: 'OREN Backend',
+    message: 'API is live'
+  });
+});
+
 // Routes
 app.use('/api', apiRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
+  res.status(200).json({
+    status: 'healthy',
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Error handling
 app.use(errorHandler);
 
+// Start server (LAST)
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
+
