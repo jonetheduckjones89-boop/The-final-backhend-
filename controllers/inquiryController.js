@@ -1,53 +1,20 @@
-const { generateEnterpriseEmail } = require('../services/aiService');
-const { sendWorkflowEmail } = require('../services/emailService');
+const { sendCustomEmail } = require('../services/emailService');
 
-const handleInquiry = async (req, res, next) => {
-    try {
-        // 1. Extraction & Validation (Mapping frontend fields to backend contract)
-        const {
-            clinicName,    // maps to clinic_name
-            clinicType,    // used for analysis context
-            email,         // client email
-            website,       // client website
-            message        // maps to notes
-        } = req.body;
+async function handleInquiry(req, res, next) {
+  try {
+    const { clinicName, email, website, clinicType, message } = req.body;
 
-        // Reconciliation of field names for the AI service
-        const clinic_name = clinicName;
-        const contact_name = clinicName; // Defaulting to clinic name if individual name is absent
-        const notes = `${clinicType ? `Type: ${clinicType}. ` : ''}${message || ''}`;
+    // TODO: AI analysis logic (optional, uses GEMINI_API_KEY)
+    // const analysisResult = await analyzeClinicData({ clinicName, website, clinicType, message });
 
-        if (!clinic_name || !email) {
-            return res.status(400).json({ error: 'Missing required clinic information.' });
-        }
+    // Send custom email
+    await sendCustomEmail({ to: email, clinicName });
 
-        console.log(`Processing inquiry for: ${clinic_name}`);
-
-        // 2. AI Analysis & Message Generation
-        const emailBody = await generateEnterpriseEmail({
-            clinic_name,
-            contact_name,
-            website,
-            notes
-        });
-
-        // 3. Email Dispatch
-        await sendWorkflowEmail(email, emailBody);
-
-        // 4. Success Response
-        res.status(200).json({
-            success: true,
-            message: 'Inquiry processed and workflow email dispatched.'
-        });
-
-    } catch (error) {
-        console.error('Controller Error:', error.message);
-        // Explicitly return 500 on service failures as requested
-        res.status(500).json({
-            success: false,
-            error: error.message || 'An internal server error occurred.'
-        });
-    }
-};
+    res.status(200).json({ success: true, message: "Inquiry received and email sent." });
+  } catch (error) {
+    next(error);
+  }
+}
 
 module.exports = { handleInquiry };
+
